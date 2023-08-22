@@ -3,6 +3,11 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/widget"
 	"github.com/xuri/excelize/v2"
 	"golang.org/x/text/encoding/charmap"
 	"os"
@@ -13,8 +18,31 @@ import (
 func main() {
 	var startRows []int
 
+	myApp := app.New()
+	myWindow := myApp.NewWindow("Выбор файла")
+
+	// Переменная для хранения имени выбранного файла
+	var selectedFileNime string
+
+	selectButton := widget.NewButton("Выбрать файл", func() {
+		dialog.ShowFileOpen(func(reader fyne.URIReadCloser, err error) {
+			if err == nil && reader != nil {
+				defer reader.Close()
+				selectedFileNime = reader.URI().Path()
+			}
+		}, myWindow)
+	})
+
+	//Создаем контейнер для размещения виджетов
+	content := container.NewVBox(
+		selectButton,
+	)
+
+	myWindow.SetContent(content)
+	myWindow.ShowAndRun()
+
 	//Открываем необходимый файл
-	sprav, err := excelize.OpenFile("Справочник.xlsx")
+	sprav, err := excelize.OpenFile(selectedFileNime)
 	if err != nil {
 		fmt.Println(err)
 		return
